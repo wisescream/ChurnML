@@ -1,0 +1,17 @@
+train:
+  experiment_name: telecom-churn-training
+  model_type: random_forest
+  validation_split: 0.2
+  random_state: 42
+  random_forest:
+    n_estimators: 200
+    max_depth: 10
+    min_samples_split: 4
+    min_samples_leaf: 2
+    random_state: 42
+  xgboost:
+    n_estimators: 300
+    max_depth: 6
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8

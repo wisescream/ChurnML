@@ -1,0 +1,42 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: python -m src.models.train_model --project-root .
+    deps:
+    - path: data/raw/telecom_churn.csv
+      hash: md5
+      md5: 0a235a4a0862e1347a1fc1414cc1b7ed
+      size: 1745183
+    - path: params.yaml
+      hash: md5
+      md5: b49ce6a593bf41894320f88525e240c0
+      size: 383
+    - path: src/data/preprocessing.py
+      hash: md5
+      md5: 1b5a68d3d900b2bd40e39db4f94035c3
+      size: 5682
+    - path: src/models/train_model.py
+      hash: md5
+      md5: 8ab4eeee6a6c44cf4f44f768a068c7e1
+      size: 5929
+    - path: src/utils/helpers.py
+      hash: md5
+      md5: b32eb39ae367fb55e0afc38ef9ab532c
+      size: 1425
+    outs:
+    - path: data/processed/churn_processed.csv
+      hash: md5
+      md5: 6e174299adeb1763645bcc76afbf241c
+      size: 464896455
+    - path: metrics.json
+      hash: md5
+      md5: 41b70cf92954f65e0ce2d577b8e6c08d
+      size: 108
+    - path: models/churn_model.pkl
+      hash: md5
+      md5: e470f0fc4bbb77268c92f09e63813639
+      size: 714377
+    - path: models/preprocessing_pipeline.pkl
+      hash: md5
+      md5: 28ab4281d96befdb3554227488f8308c
+      size: 215418

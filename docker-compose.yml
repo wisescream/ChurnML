@@ -1,0 +1,75 @@
+version: "3.9"
+
+services:
+  airflow-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+    volumes:
+      - airflow-db-data:/var/lib/postgresql/data
+
+  airflow-webserver:
+    build:
+      context: .
+      dockerfile: airflow/Dockerfile
+    depends_on:
+      airflow-db:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+    ports:
+      - "8080:8080"
+    command: bash -c "airflow db migrate && airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@example.com --password admin && airflow webserver"
+
+  airflow-scheduler:
+    build:
+      context: .
+      dockerfile: airflow/Dockerfile
+    depends_on:
+      airflow-webserver:
+        condition: service_started
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
+    command: bash -c "airflow db migrate && airflow scheduler"
+
+  churn-api:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile
+    ports:
+      - "8000:8080"
+    environment:
+      MODEL_OUTPUT_PATH: /app/models/churn_model.pkl
+      PIPELINE_PATH: /app/models/preprocessing_pipeline.pkl
+    depends_on:
+      - airflow-webserver
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:10.4.3
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana-dashboard.json:/etc/grafana/provisioning/dashboards/churn.json:ro
+
+volumes:
+  airflow-db-data:
+  grafana-data:

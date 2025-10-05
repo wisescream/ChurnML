@@ -1,0 +1,51 @@
+{
+	"dashboard": {
+		"id": null,
+		"title": "Telecom Churn API Monitoring",
+		"timezone": "browser",
+		"panels": [
+			{
+				"type": "graph",
+				"title": "API Latency (P95)",
+				"datasource": "Prometheus",
+				"targets": [
+					{
+						"expr": "histogram_quantile(0.95, sum(rate(fastapi_request_duration_seconds_bucket[5m])) by (le))",
+						"legendFormat": "P95"
+					}
+				],
+				"id": 1,
+				"gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+			},
+			{
+				"type": "graph",
+				"title": "Request Rate",
+				"datasource": "Prometheus",
+				"targets": [
+					{
+						"expr": "sum(rate(fastapi_requests_total[5m]))",
+						"legendFormat": "Requests / s"
+					}
+				],
+				"id": 2,
+				"gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+			},
+			{
+				"type": "graph",
+				"title": "Error Rate",
+				"datasource": "Prometheus",
+				"targets": [
+					{
+						"expr": "sum(rate(fastapi_requests_total{status=~\"5..\"}[5m]))",
+						"legendFormat": "5xx"
+					}
+				],
+				"id": 3,
+				"gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+			}
+		],
+		"schemaVersion": 38,
+		"version": 1
+	},
+	"overwrite": true
+}

@@ -1,0 +1,15 @@
+stages:
+  train:
+    cmd: python -m src.models.train_model --project-root .
+    deps:
+      - data/raw/telecom_churn.csv
+      - params.yaml
+      - src/data/preprocessing.py
+      - src/models/train_model.py
+      - src/utils/helpers.py
+    outs:
+      - data/processed/churn_processed.csv
+      - models/churn_model.pkl
+      - models/preprocessing_pipeline.pkl
+    metrics:
+      - metrics.json
