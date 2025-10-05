@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.env
+mlruns/
+logs/
+.tmp/
+.airflow/
+.idea/
+.vscode/
+.pytest_cache/
+data/processed/
+!data/processed/.gitkeep
+models/
+!models/.gitkeep
+metrics.json
