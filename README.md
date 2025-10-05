@@ -22,6 +22,7 @@ This repository contains a production-oriented MLOps implementation for predicti
 ├── deployment/              # FastAPI app and Dockerfile
 ├── monitoring/              # Prometheus + Grafana configs
 ├── notebooks/               # Exploratory analysis
+├── scripts/                 # Automation helpers (DVC remote, ECS deployment)
 ├── src/                     # Reusable Python modules (data, models, utils)
 ├── docker-compose.yml       # Local orchestration (Airflow + API)
 ├── dvc.yaml                 # Data & model pipeline definition
@@ -42,12 +43,14 @@ This repository contains a production-oriented MLOps implementation for predicti
 	```
 
 2. **Configure DVC and MLflow**:
-	- Initialize DVC remote pointing to your S3 bucket (replace placeholders):
+	- Use the helper script to register a default remote (reads `DVC_REMOTE_URL` if `--url` omitted):
 
 	  ```powershell
-	  dvc remote add -d churn-remote s3://<your-s3-bucket>/dvc
+	  python scripts/setup_dvc_remote.py --url s3://<your-s3-bucket>/dvc
 	  dvc push
 	  ```
+
+	  Optional environment variables: `DVC_REMOTE_ENDPOINT`, `DVC_REMOTE_PROFILE`, `DVC_REMOTE_CREDENTIALPATH`.
 
 	- Set MLflow tracking URI via environment variable or `mlflow ui --backend-store-uri mlruns`.
 
@@ -121,6 +124,19 @@ GitHub Actions workflow (`ci-cd/mlops_pipeline.yml`) executes on pushes to `main
 5. Update the ECS Fargate service for zero-downtime deployment.
 
 Set the following secrets in your repository: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `ECR_REGISTRY`, and optionally `ECS_TASK_DEFINITION` if you extend the deployment step.
+
+### Deployment automation helper
+
+After a successful pipeline run (or locally when testing), you can register a new ECS task definition and roll the service with:
+
+```powershell
+python scripts/deploy_to_ecs.py \
+	--cluster telecom-churn-cluster \
+	--service telecom-churn-api-svc \
+	--image ${env:ECR_REGISTRY}/telecom-churn-api:${env:GITHUB_SHA}
+```
+
+Provide extra template substitutions via `--set KEY=VALUE` or environment variables referenced in `deployment/ecs/telecom-churn-api-task.json`.
 
 ## ☁️ AWS Deployment Blueprint
 
