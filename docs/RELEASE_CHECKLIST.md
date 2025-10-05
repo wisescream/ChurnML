@@ -12,6 +12,7 @@ Use this checklist before pushing changes to the shared repository:
    - Ensure generated files (`data/processed/`, `models/`, `metrics.json`, `mlruns/`) are not committed directly; use DVC for large artifacts.
    - Run `dvc status` to confirm tracked outputs are in sync.
       - If the remote isn't configured locally, execute `python scripts/setup_dvc_remote.py --url s3://<bucket>/dvc` before running `dvc push`.
+         - Export credentials required by the remote (e.g., `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`).
 4. **Security & credentials**
    - Validate that secrets remain in environment variables or secret managers—not in Git.
    - Check CI secrets (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, etc.) are still valid.
@@ -22,6 +23,7 @@ Use this checklist before pushing changes to the shared repository:
    6. **Deployment hand-off**
       - Tag the latest MLflow run with `release_commit` and `release_candidate` metadata.
       - Update the ECS task definition using `python scripts/deploy_to_ecs.py` (override `--image` with the freshly pushed ECR tag).
+         - Confirm AWS credentials (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, optional session token) are set so the script can call ECS APIs.
       - Confirm the GitHub Actions deployment finished successfully and the ECS service reports healthy tasks.
 
 Automating these checks via GitHub Actions or pre-push hooks is recommended as the project matures.

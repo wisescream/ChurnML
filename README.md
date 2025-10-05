@@ -52,6 +52,8 @@ This repository contains a production-oriented MLOps implementation for predicti
 
 	  Optional environment variables: `DVC_REMOTE_ENDPOINT`, `DVC_REMOTE_PROFILE`, `DVC_REMOTE_CREDENTIALPATH`.
 
+	Before running, export credentials compatible with your backend (for AWS S3-based remotes, set `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optionally `AWS_SESSION_TOKEN`).
+
 	- Set MLflow tracking URI via environment variable or `mlflow ui --backend-store-uri mlruns`.
 
 3. **Reproduce the training pipeline**:
@@ -137,6 +139,8 @@ python scripts/deploy_to_ecs.py \
 ```
 
 Provide extra template substitutions via `--set KEY=VALUE` or environment variables referenced in `deployment/ecs/telecom-churn-api-task.json`.
+
+Ensure AWS credentials are available in the execution environment (standard SDK variables: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, and optionally `AWS_SESSION_TOKEN`) so the script can register task definitions.
 
 ## ☁️ AWS Deployment Blueprint
 
