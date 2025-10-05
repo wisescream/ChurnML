@@ -1,0 +1,43 @@
+{
+  "family": "telecom-churn-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::123456789012:role/telecom-churn-ecs-execution",
+  "taskRoleArn": "arn:aws:iam::123456789012:role/telecom-churn-ecs-task",
+  "containerDefinitions": [
+    {
+      "name": "telecom-churn-api",
+      "image": "${ECR_REGISTRY}/telecom-churn-api:2025-10-05-51b965e",
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "hostPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/telecom-churn-api",
+          "awslogs-region": "${AWS_REGION}",
+          "awslogs-stream-prefix": "api"
+        }
+      },
+      "environment": [
+        { "name": "MODEL_REGISTRY_URI", "value": "s3://telecom-churn-mlflow" },
+        { "name": "MLFLOW_TRACKING_URI", "value": "s3://telecom-churn-mlflow" },
+        { "name": "RAW_DATA_PATH", "value": "s3://telecom-churn-data/raw/telecom_churn.csv" }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 30
+      }
+    }
+  ]
+}

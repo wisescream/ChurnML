@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from contextlib import asynccontextmanager
 from typing import Awaitable, Callable, List
 
 from fastapi import FastAPI, HTTPException, Request, Response
@@ -18,10 +19,23 @@ from src.utils.helpers import get_logger
 
 LOGGER = get_logger("fastapi.churn")
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+	"""Application lifespan handler used to warm caches before serving traffic."""
+
+	try:
+		get_predictor()
+		LOGGER.info("Churn predictor initialized successfully")
+	except FileNotFoundError as exc:
+		LOGGER.error("Failed to load predictor: %s", exc)
+	yield
+
+
 app = FastAPI(
 	title="Telecom Churn Prediction API",
 	description="Predict customer churn probabilities using a trained ML model",
 	version="0.1.0",
+	lifespan=lifespan,
 )
 
 
@@ -35,19 +49,6 @@ REQUEST_LATENCY = Histogram(
 	"Request duration in seconds",
 	["method", "path"],
 )
-
-
-@app.on_event("startup")
-def _load_model() -> None:
-	"""Ensure model artifacts are loaded in memory on startup."""
-
-	try:
-		get_predictor()
-		LOGGER.info("Churn predictor initialized successfully")
-	except FileNotFoundError as exc:
-		LOGGER.error("Failed to load predictor: %s", exc)
-
-
 @app.middleware("http")
 async def metrics_middleware(
 	request: Request, call_next: Callable[[Request], Awaitable[Response]]
